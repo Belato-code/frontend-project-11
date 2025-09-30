@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/index.js" defer></script>
+    <title>RSS agregator</title>
+  </head>
+  <body>
+   <section class="container-fluid bg-dark p-5">
+			<div class="row">
+				<div class="col-md-10 col-lg-8 mx-auto text-white">
+					<h1 class="display-3 mb-0">RSS агрегатор</h1>
+					<p class="lead">Начните читать RSS сегодня! Это легко, это красиво.</p>
+					<form class="rss-form">
+						<div class="row">
+							<div class="col">
+								<div class="form-floating">
+									<input type="text" id="url-input" class="form-control w-100" placeholder="RSS ссылка" required aria-label="url" name="url" autocomplete="off">
+									<label for="url-input">Ссылка RSS</label>
+								</div>
+							</div>
+							<div class="col-auto">
+								<button type="submit" aria-label="add" class="btn btn-primary h-100 btn-lg px-sm-5">Добавить</button>
+							</div>
+						</div>
+					</form>
+					<p class="mt-2 mb-0 text-secondary">Пример: https://lorem-rss.hexlet.app/feed</p>
+					<p class="feedback text-danger position-absolute m-0 small"></p>
+				</div>
+			</div>
+  	</section>
+		<section>
+			<div class="container-fluid container-xxl p-5">
+				<div class="row">
+					<div class="col-md-10 col-lg-8 order-1 mx-auto posts"></div>
+					<div class="col-md-10 col-lg-4 order-0 mx-auto order-lg-1 feeds"></div>
+				</div>
+			</div>
+		</section>
+  </body>
+    
+</html>
