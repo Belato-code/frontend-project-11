@@ -1,1 +1,3 @@
-console.log('Hello, Vite!')
+import view from './view'
+
+view()
