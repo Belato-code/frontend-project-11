@@ -53,9 +53,11 @@ function validator (str) {
 
 function render () {
   const input = document.getElementById('url-input')
+  input.focus()
 
   input.classList.remove('is-invalid')
   feedback.innerHTML = ''
+  feedback.classList.remove('text-danger', 'text-success')
   switch (watchedObject.valid) {
     case false: {
       input.classList.add('is-invalid')
@@ -64,8 +66,6 @@ function render () {
     }
     case true: {
       form.reset()
-      input.focus()
-      feedback.classList.remove('text-dunger')
       feedback.classList.add('text-success')
       break
     }
