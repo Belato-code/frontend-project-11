@@ -38,7 +38,7 @@ function validator (str) {
           state.feeds.push(str)
           resolve ({
             valid: true,
-            message: '',
+            message: 'RSS успешно загружен',
           })
         }
     })
@@ -59,15 +59,19 @@ function render () {
   switch (watchedObject.valid) {
     case false: {
       input.classList.add('is-invalid')
+      feedback.classList.add('text-danger')
       break
     }
     case true: {
       form.reset()
       input.focus()
+      feedback.classList.remove('text-dunger')
+      feedback.classList.add('text-success')
       break
     }
     case 'exist': {
       input.classList.add('is-invalid')
+      feedback.classList.add('text-danger')
       break
     }
     default: {
