@@ -56,7 +56,7 @@ function render () {
 
   input.classList.remove('is-invalid')
   feedback.innerHTML = ''
-  feedback.classList.remove('text-danger', 'text-success')
+  feedback.classList.remove('text-danger')
   switch (watchedObject.valid) {
     case false: {
       input.classList.add('is-invalid')
@@ -89,7 +89,6 @@ export default function view() {
   e.preventDefault()
   const formInput = e.target.querySelector('#url-input')
   const url = formInput.value.trim()
-  render()
 
   validator(url)
     .then(validationData => {
