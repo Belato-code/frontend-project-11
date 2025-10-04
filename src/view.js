@@ -53,7 +53,6 @@ function validator (str) {
 
 function render () {
   const input = document.getElementById('url-input')
-  input.focus()
 
   input.classList.remove('is-invalid')
   feedback.innerHTML = ''
@@ -62,16 +61,19 @@ function render () {
     case false: {
       input.classList.add('is-invalid')
       feedback.classList.add('text-danger')
+      input.focus()
       break
     }
     case true: {
       form.reset()
+      input.focus()
       feedback.classList.add('text-success')
       break
     }
     case 'exist': {
       input.classList.add('is-invalid')
       feedback.classList.add('text-danger')
+      input.focus()
       break
     }
     default: {
@@ -96,4 +98,5 @@ export default function view() {
       render()
     })
   })
+  render()
 }
