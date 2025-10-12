@@ -1,3 +1,3 @@
-import view from './view'
+import app from './app'
 
-view()
+app()
