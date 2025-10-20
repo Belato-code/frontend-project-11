@@ -76,9 +76,17 @@ export default () => {
         return parsedData
       })
       .catch(error => {
+        let errorMessage
+        if (error.name === 'AxiosError') {
+          error.message = i18n.t('errors.network')
+        }
+        else {
+          errorMessage = error.message || i18n.t('errors.unknown')
+        }
         watchedState.status = 'invalidRSS'
-        watchedState.error = error.message
-        throw error
+        watchedState.error = errorMessage
+
+        throw new Error(errorMessage)
       })
   }
   
@@ -125,8 +133,7 @@ export default () => {
                   elements.form.reset()
                 })
                 .catch((error) => {
-                  watchedState.status = 'invalidRSS'
-                  watchedState.error = i18n.t('errors.network')
+                  throw error
                 })
             }
             else {
