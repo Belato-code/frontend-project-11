@@ -75,7 +75,7 @@ export default (state, elements, i18n) => {
       button.dataset.id = post.id
       button.classList.add('btn', 'btn-outline-primary', 'btn-sm')
       button.textContent = i18n.t('content.button')
-      
+
       li.append(link, button)
       lists.append(li)
     })

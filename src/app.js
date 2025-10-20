@@ -29,7 +29,7 @@ const updatePosts = (watchedState, i18n) => {
         console.error('Error updating posts:', error)
       }),
   )
- 
+
   return Promise.allSettled(promises)
     .finally(() => setTimeout(() => updatePosts(watchedState, i18n), 5000))
 }
@@ -115,7 +115,7 @@ export default () => {
         .then(() => ({ isValid: true, message: null }))
         .catch(error => ({
           isValid: false,
-          message: error.message
+          message: error.message,
         }))
     }
 
