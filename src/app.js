@@ -14,22 +14,22 @@ const makeURL = (link) => {
 }
 
 const updatePosts = (watchedState, i18n) => {
-  const promises = watchedState.feeds.map((feed) => 
+  const promises = watchedState.feeds.map(feed =>
     axios.get(makeURL(feed.link))
-      .then(response => {
+      .then((response) => {
         const { posts } = parser(response, i18n)
         const existingPostTitles = new Set(watchedState.posts.map(post => post.title))
         const newPosts = posts.filter(post => !existingPostTitles.has(post.title))
-        
+
         if (newPosts.length > 0) {
           watchedState.posts.unshift(...newPosts)
         }
       })
       .catch((error) => {
         console.error('Error updating posts:', error)
-      })
+      }),
   )
-  
+ 
   return Promise.allSettled(promises)
     .finally(() => setTimeout(() => updatePosts(watchedState, i18n), 5000))
 }
@@ -44,7 +44,7 @@ export default () => {
     UI: {
       currentPostId: null,
       viewedPosts: new Set(),
-    }
+    },
   }
 
   const elements = {
@@ -56,7 +56,7 @@ export default () => {
     modal: document.querySelector('#postModal'),
     modalTitle: document.getElementById('modalTitle'),
     modalDescription: document.getElementById('modalDescription'),
-    modalLink: document.querySelector('.full-article')
+    modalLink: document.querySelector('.full-article'),
   }
 
   const getRss = (url, watchedState, i18n) => {
@@ -75,7 +75,7 @@ export default () => {
 
         return parsedData
       })
-      .catch(error => {
+      .catch((error) => {
         let errorMessage = ''
         if (error.isAxiosError) {
           errorMessage = i18n.t('errors.network')
@@ -89,72 +89,72 @@ export default () => {
         throw new Error(errorMessage)
       })
   }
-  
+
   const i18n = i18next.createInstance()
   i18n.init({
     lng: 'ru',
     debug: false,
     resources,
   }).then(() => {
-      yup.setLocale({
-        string: {  
-          url: () => i18n.t('errors.url'),
-        },
-        mixed: {
-          notOneOf: () => i18n.t('errors.exist'),
-          required: () => i18n.t('errors.empty'),
-        },
-      })
+    yup.setLocale({
+      string: {
+        url: () => i18n.t('errors.url'),
+      },
+      mixed: {
+        notOneOf: () => i18n.t('errors.exist'),
+        required: () => i18n.t('errors.empty'),
+      },
+    })
 
-      const watchedState = watch(state, elements, i18n)
+    const watchedState = watch(state, elements, i18n)
 
-      const validateURL = (existingUrls, url) => {
-        const schema = yup.string().url().required().notOneOf(existingUrls)
-        return schema
-          .validate(url)
-          .then(() => ({ isValid: true, message: null }))
-          .catch((error) => ({
-            isValid: false,
-            message: error.message
-          }))
+    const validateURL = (existingUrls, url) => {
+      const schema = yup.string().url().required().notOneOf(existingUrls)
+      return schema
+        .validate(url)
+        .then(() => ({ isValid: true, message: null }))
+        .catch(error => ({
+          isValid: false,
+          message: error.message
+        }))
+    }
+
+    elements.form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const url = elements.input.value.trim()
+      validateURL(watchedState.existingUrls, url)
+        .then((validationResult) => {
+          if (validationResult.isValid) {
+            return getRss(url, watchedState, i18n)
+              .then(() => {
+                watchedState.error = null
+                watchedState.status = 'valid'
+                watchedState.existingUrls.push(url)
+                elements.form.reset()
+              })
+              .catch((error) => {
+                throw error
+              })
+          }
+          else {
+            watchedState.status = 'error'
+            watchedState.error = validationResult.message
+            elements.input.focus()
+          }
+        })
+    })
+    elements.posts.addEventListener('click', (e) => {
+      const postId = e.target.dataset.id
+      const linkId = e.target.dataset.linkId
+      if (postId) {
+        watchedState.UI.currentPostId = postId
+        watchedState.UI.viewedPosts.add(postId)
       }
+      if (linkId) {
+        watchedState.UI.viewedPosts.add(linkId)
+      }
+    })
 
-      elements.form.addEventListener('submit', (e) => {
-        e.preventDefault()
-        const url = elements.input.value.trim()
-        validateURL(watchedState.existingUrls, url)
-          .then((validationResult) => {
-            if (validationResult.isValid) {
-              return getRss(url, watchedState, i18n)
-                .then(() => {
-                  watchedState.error = null
-                  watchedState.status = 'valid'
-                  watchedState.existingUrls.push(url)
-                  elements.form.reset()
-                })
-                .catch((error) => {
-                  throw error
-                })
-            }
-            else {
-              watchedState.status = 'error'
-              watchedState.error = validationResult.message
-              elements.input.focus()
-            }
-          })  
-      })
-      elements.posts.addEventListener('click', (e) => {
-        const postId = e.target.dataset.id
-        const linkId = e.target.dataset.linkId
-        if (postId) {
-          watchedState.UI.currentPostId = postId
-          watchedState.UI.viewedPosts.add(postId)
-        }
-          if (linkId) {
-          watchedState.UI.viewedPosts.add(linkId)
-        }
-      })
-
-      updatePosts(watchedState, i18n)
+    updatePosts(watchedState, i18n)
   })
 }

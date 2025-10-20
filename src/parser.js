@@ -3,8 +3,8 @@ import { uniqueId } from 'lodash'
 const parser = (response, i18n) => {
   const xmlString = response.data.contents
   const domParser = new DOMParser()
-  const xmlDoc = domParser.parseFromString(xmlString, "text/xml")
-  
+  const xmlDoc = domParser.parseFromString(xmlString, 'text/xml')
+
   if (!xmlDoc.querySelector('channel > title')) {
     throw new Error(i18n.t('errors.parserError'))
   }

@@ -1,5 +1,5 @@
-import onChange from "on-change"
-import { Modal } from "bootstrap"
+import onChange from 'on-change'
+import { Modal } from 'bootstrap'
 
 export default (state, elements, i18n) => {
   const { feedback, input, posts, feeds, modal, modalTitle, modalDescription, modalLink } = elements
@@ -63,10 +63,11 @@ export default (state, elements, i18n) => {
       link.href = post.link
       link.textContent = post.title
       link.setAttribute('rel', 'noopener noreferrer')
-      
+
       if (state.UI.viewedPosts.has(post.id)) {
         link.classList.add('fw-normal', 'link-secondary')
-      } else {
+      }
+      else {
         link.classList.add('fw-bold')
       }
 
@@ -135,14 +136,14 @@ export default (state, elements, i18n) => {
       li.append(feedTitle, subtitle)
       ul.append(li)
     })
-    
+
     container.append(ul)
     feeds.append(container)
   }
 
   const watchedState = onChange(state, (path, value) => {
     console.log('State changed:', path, value)
-    
+
     switch (path) {
       case 'status':
       case 'error':
