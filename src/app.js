@@ -76,9 +76,9 @@ export default () => {
         return parsedData
       })
       .catch(error => {
-        let errorMessage
-        if (error.name === 'AxiosError') {
-          error.message = i18n.t('errors.network')
+        let errorMessage = ''
+        if (error.isAxiosError) {
+          errorMessage = i18n.t('errors.network')
         }
         else {
           errorMessage = error.message || i18n.t('errors.unknown')
