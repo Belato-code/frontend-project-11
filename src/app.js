@@ -62,6 +62,9 @@ export default () => {
   const getRss = (url, watchedState, i18n) => {
     return axios.get(makeURL(url))
       .then((response) => {
+        if (!response.data || !response.data.contents) {
+          throw new Error(i18n.t('errors.network'))
+        }
         const parsedData = parser(response, i18n)
         return parsedData
       })

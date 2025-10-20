@@ -7,6 +7,7 @@ export default {
       unknown: 'Ошибка валидации',
       parserError: 'Ресурс не содержит валидный RSS',
       post: 'Ошибка при обновлении поста',
+      network: 'Ошибка сети'
     },
     success: 'RSS успешно загружен',
     content: {
