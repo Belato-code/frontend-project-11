@@ -126,7 +126,7 @@ export default () => {
                 })
                 .catch((error) => {
                   watchedState.status = 'invalidRSS'
-                  watchedState.error = error.message
+                  watchedState.error = i18n.t('errors.network')
                 })
             }
             else {
