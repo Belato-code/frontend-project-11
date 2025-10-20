@@ -76,6 +76,8 @@ export default () => {
         return parsedData
       })
       .catch(error => {
+        watchedState.status = 'invalidRSS'
+        watchedState.error = error.message
         throw error
       })
   }
