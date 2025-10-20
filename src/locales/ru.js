@@ -5,7 +5,8 @@ export default {
       empty: 'Поле не должно быть пустым',
       exist: 'RSS уже существует',
       unknown: 'Ошибка валидации',
-      parserError: 'Ресурс не содержит валидный RSS'
+      parserError: 'Ресурс не содержит валидный RSS',
+      post: 'Ошибка при обновлении поста',
     },
     success: 'RSS успешно загружен',
     content: {

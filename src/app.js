@@ -7,10 +7,31 @@ import parser from './parser.js'
 
 const makeURL = (link) => {
   const url = new URL('get', 'https://allorigins.hexlet.app')
-  url.searchParams.append('disableCash', 'true')
+  url.searchParams.append('disableCache', 'true')
   url.searchParams.append('url', link)
 
   return url.toString()
+}
+
+const updatePosts = (watchedState, i18n) => {
+  const promises = watchedState.feeds.map((feed) => 
+    axios.get(makeURL(feed.link))
+      .then(response => {
+        const { posts } = parser(response, i18n)
+        const existingPostTitles = new Set(watchedState.posts.map(post => post.title))
+        const newPosts = posts.filter(post => !existingPostTitles.has(post.title))
+        
+        if (newPosts.length > 0) {
+          watchedState.posts.unshift(...newPosts)
+        }
+      })
+      .catch((error) => {
+        console.error('Error updating posts:', error)
+      })
+  )
+  
+  return Promise.allSettled(promises)
+    .finally(() => setTimeout(() => updatePosts(watchedState, i18n), 5000))
 }
 
 export default () => {
@@ -20,6 +41,10 @@ export default () => {
     error: null,
     feeds: [],
     posts: [],
+    UI: {
+      currentPostId: null,
+      viewedPosts: new Set(),
+    }
   }
 
   const elements = {
@@ -28,21 +53,30 @@ export default () => {
     input: document.querySelector('#url-input'),
     posts: document.querySelector('.posts'),
     feeds: document.querySelector('.feeds'),
+    modal: document.querySelector('#postModal'),
+    modalTitle: document.getElementById('modalTitle'),
+    modalDescription: document.getElementById('modalDescription'),
+    modalLink: document.querySelector('.full-article')
   }
 
-  const getData = (url, watchedState, i18n) => {
+  const getRss = (url, watchedState, i18n) => {
     return axios.get(makeURL(url))
       .then((response) => {
         const parsedData = parser(response, i18n)
         return parsedData
       })
       .then((parsedData) => {
-        watchedState.feeds.push(parsedData.feed)
-        watchedState.posts.push(parsedData.posts)
+        parsedData.feed.link = url
+        watchedState.feeds.unshift(parsedData.feed)
+        watchedState.posts.unshift(...parsedData.posts)
+
         return parsedData
       })
-      .catch(error => console.log(error.message))
+      .catch(error => {
+        throw error
+      })
   }
+  
   const i18n = i18next.createInstance()
   i18n.init({
     lng: 'ru',
@@ -60,6 +94,7 @@ export default () => {
       })
 
       const watchedState = watch(state, elements, i18n)
+
       const validateURL = (existingUrls, url) => {
         const schema = yup.string().url().required().notOneOf(existingUrls)
         return schema
@@ -70,19 +105,23 @@ export default () => {
             message: error.message
           }))
       }
+
       elements.form.addEventListener('submit', (e) => {
         e.preventDefault()
         const url = elements.input.value.trim()
         validateURL(watchedState.existingUrls, url)
           .then((validationResult) => {
             if (validationResult.isValid) {
-              return getData(url, watchedState, i18n)
+              return getRss(url, watchedState, i18n)
                 .then(() => {
-                  console.log(watchedState.feeds)
                   watchedState.error = null
                   watchedState.status = 'valid'
                   watchedState.existingUrls.push(url)
                   elements.form.reset()
+                })
+                .catch((error) => {
+                  watchedState.status = 'invalidRSS'
+                  watchedState.error = error.message
                 })
             }
             else {
@@ -90,12 +129,20 @@ export default () => {
               watchedState.error = validationResult.message
               elements.input.focus()
             }
-          })
-          .catch((error) => {
-            watchedState.status = 'invalidRSS'
-            watchedState.error = error.message
-            console.error('Request failed:', error)
-          })
+          })  
       })
+      elements.posts.addEventListener('click', (e) => {
+        const postId = e.target.dataset.id
+        const linkId = e.target.dataset.linkId
+        if (postId) {
+          watchedState.UI.currentPostId = postId
+          watchedState.UI.viewedPosts.add(postId)
+        }
+          if (linkId) {
+          watchedState.UI.viewedPosts.add(linkId)
+        }
+      })
+
+      updatePosts(watchedState, i18n)
   })
 }

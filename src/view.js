@@ -1,7 +1,8 @@
 import onChange from "on-change"
+import { Modal } from "bootstrap"
 
 export default (state, elements, i18n) => {
-  const { feedback, input, posts, feeds } = elements
+  const { feedback, input, posts, feeds, modal, modalTitle, modalDescription, modalLink } = elements
 
   const handleFeedback = () => {
     input.classList.remove('is-valid', 'is-invalid')
@@ -26,21 +27,52 @@ export default (state, elements, i18n) => {
     }
   }
 
-  const preparePosts = (posts) => {
+  const renderModal = () => {
+    console.log('renderModal called with postId:', state.UI.currentPostId)
+    const currentPost = state.posts.find(post => post.id === state.UI.currentPostId)
+
+    if (!currentPost) {
+      console.error('Post not found for ID:', state.UI.currentPostId)
+      return
+    }
+
+    modalTitle.textContent = currentPost.title
+    modalDescription.textContent = currentPost.description || 'Описание отсутствует'
+    modalLink.href = currentPost.link
+
+    const modalInstance = new Modal(modal)
+    modalInstance.show()
+    console.log('Modal show called')
+  }
+
+  const preparePosts = (postsData) => {
     const lists = document.createElement('ul')
     lists.classList.add('list-group')
 
-    posts.forEach((post) => {
+    if (!Array.isArray(postsData)) return lists
+
+    postsData.forEach((post) => {
+      if (!post || !post.title || !post.link) return
+
       const li = document.createElement('li')
-      li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'rounded-0', 'border-0')
+      li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'rounded-0', 'border-0')
 
       const link = document.createElement('a')
-      link.classList.add('fw-bold')
+      link.target = '_blank'
+      link.dataset.linkId = post.id
       link.href = post.link
       link.textContent = post.title
+      link.setAttribute('rel', 'noopener noreferrer')
+      
+      if (state.UI.viewedPosts.has(post.id)) {
+        link.classList.add('fw-normal', 'link-secondary')
+      } else {
+        link.classList.add('fw-bold')
+      }
 
       const button = document.createElement('button')
-      button.classList.add('btn', 'btn-outline-primary')
+      button.dataset.id = post.id
+      button.classList.add('btn', 'btn-outline-primary', 'btn-sm')
       button.textContent = i18n.t('content.button')
       
       li.append(link, button)
@@ -52,6 +84,8 @@ export default (state, elements, i18n) => {
 
   const renderPosts = () => {
     posts.innerHTML = ''
+    if (!state.posts || state.posts.length === 0) return
+
     const card = document.createElement('div')
     card.classList.add('card', 'border-0')
 
@@ -62,22 +96,20 @@ export default (state, elements, i18n) => {
     postsTitle.textContent = i18n.t('content.posts')
     cardBody.append(postsTitle)
 
-    card.append(cardBody)
-
-    state.posts.forEach(element => {
-      const post = preparePosts(element)
-      card.append(post)
-    })
+    const postsList = preparePosts(state.posts)
+    card.append(cardBody, postsList)
     posts.append(card)
   }
 
   const renderFeeds = () => {
     feeds.innerHTML = ''
+    if (!state.feeds || state.feeds.length === 0) return
+
     const container = document.createElement('div')
-    container.classList.add('card', 'border-0', 'rounded-0')
+    container.classList.add('card', 'border-0')
 
     const div = document.createElement('div')
-    div.classList.add('card-body', 'border-0', 'rounded-0')
+    div.classList.add('card-body')
     const title = document.createElement('h2')
     title.classList.add('card-title', 'h4')
     title.textContent = i18n.t('content.feeds')
@@ -85,29 +117,32 @@ export default (state, elements, i18n) => {
 
     container.append(div)
 
+    const ul = document.createElement('ul')
+    ul.classList.add('list-group', 'list-group-flush')
+
     state.feeds.forEach((feed) => {
-      const ul = document.createElement('ul')
-      ul.classList.add('list-group')
-
       const li = document.createElement('li')
-      li.classList.add('list-group-item', 'rounded-0', 'border-0')
+      li.classList.add('list-group-item', 'border-0')
 
-      const title = document.createElement('h3')
-      title.classList.add('h6')
-      title.textContent = feed.title
+      const feedTitle = document.createElement('h3')
+      feedTitle.classList.add('h6', 'm-0')
+      feedTitle.textContent = feed.title
 
       const subtitle = document.createElement('p')
-      subtitle.classList.add('m-0', 'text-black-50')
+      subtitle.classList.add('m-0', 'small', 'text-black-50')
       subtitle.textContent = feed.description
 
-      li.append(title, subtitle)
+      li.append(feedTitle, subtitle)
       ul.append(li)
-      container.append(ul)
     })
+    
+    container.append(ul)
     feeds.append(container)
   }
 
-  const watchedState = onChange(state, (path) => {
+  const watchedState = onChange(state, (path, value) => {
+    console.log('State changed:', path, value)
+    
     switch (path) {
       case 'status':
       case 'error':
@@ -119,9 +154,23 @@ export default (state, elements, i18n) => {
       case 'feeds':
         renderFeeds()
         break
+      case 'UI.currentPostId':
+        if (value) {
+          console.log('Opening modal for post ID:', value)
+          renderModal()
+        }
+        break
+      case 'UI.viewedPosts':
+        renderPosts()
+        break
       default:
         break
     }
   })
+
+  handleFeedback()
+  renderPosts()
+  renderFeeds()
+
   return watchedState
 }
